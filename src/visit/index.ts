@@ -24,7 +24,6 @@ export interface NodeIndexable<Id = any> {
     from_node_index(ix: number): Id
 }
 
-
 export interface EdgeIndexable<Id = any> {
     to_edge_index(id: Id): number;
     from_edge_index(ix: number): Id;
@@ -86,7 +85,6 @@ export function NodeRef<NodeId, N>(id: NodeId, weight: N): NodeRef<NodeId, N> {
     }
 }
 
-// GraphBase<any, any> & IntoNodeReferences<NodeId> & IntoNeighborsDirected<NodeId> & IntoEdgesDirected & IntoEdgeReferences & NodeCount & EdgeCount & Visitable<NodeId>
 export type GraphRef<NodeId, EdgeId, NodeWeight = any, EdgeWeight = any> = GraphBase<NodeId, EdgeId, NodeWeight, EdgeWeight> & IntoNodeReferences<NodeId> & IntoNeighborsDirected<NodeId> & IntoEdgesDirected & IntoEdgeReferences & NodeCount & EdgeCount & Visitable<NodeId>
 
 export interface IntoEdgeReferences<NodeId = any, EdgeId = any, NodeWeight = any, EdgeWeight = any> extends GraphBase<NodeId, EdgeId, NodeWeight, EdgeWeight> {
