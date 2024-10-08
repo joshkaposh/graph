@@ -1,6 +1,6 @@
 import { DoubleEndedIterator, Iterator, done, iter, range } from 'joshkaposh-iterator';
 import { is_some, Option } from 'joshkaposh-option'
-import { DIRECTIONS, Direction, Incoming, Outgoing, Directed, Undirected, umax, EdgeType, Node, Edge, createNode, createEdge, index_twice } from './shared';
+import { DIRECTIONS, Direction, Incoming, Outgoing, Directed, Undirected, umax, EdgeType, Node, Edge, createNode, createEdge, index_twice, GraphIx } from './shared';
 import { assert_some, TODO } from 'joshkaposh-iterator/src/util';
 import { capacity, extend, reserve, swap, swap_remove } from '../array-helpers';
 import { enumerate } from '../util';
@@ -8,7 +8,6 @@ import { EdgeId, EdgeRef, EdgeWeight, GraphBase, NodeId, NodeRef, VisitMap } fro
 import { FixedBitSet } from 'fixed-bit-set';
 import { VisitorFbs } from '../visit/visitor';
 
-export type GraphIx = 8 | 16 | 32;
 
 export function DiGraph<N, E>() {
     return Graph.directed<N, E>()

@@ -1,9 +1,9 @@
 import { TODO, assert } from "joshkaposh-iterator/src/util";
-import { Directed, Direction, EdgeType, Outgoing, Undirected } from "./graph/shared";
+import { Directed, Direction, EdgeType, Outgoing, Undirected, GraphIx } from "./graph/shared";
 import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter } from "joshkaposh-iterator";
 import { Option, is_some } from 'joshkaposh-option'
 import { swap_remove } from "./array-helpers";
-import { Graph, GraphIx } from "./graph/graph";
+import { Graph } from "./graph/graph";
 import { IndexMap, Ord } from "joshkaposh-index-map";
 import { EdgeRef, GraphBase, NodeId, NodeRef, VisitMap, VisitorSet } from './visit'
 

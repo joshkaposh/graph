@@ -1,13 +1,10 @@
 import { Option } from "joshkaposh-option";
 
-type UnsignedIntPower = 8 | 16 | 32;
+export type GraphIx = 8 | 16 | 32;
 
-export function umax(int_size: UnsignedIntPower) {
+export function umax(int_size: GraphIx) {
     return Math.pow(2, int_size) - 1
 }
-
-
-
 
 export type EdgeType = {
     is_directed(): boolean;
