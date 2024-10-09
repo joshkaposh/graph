@@ -7,10 +7,12 @@ import { Graph } from "./graph/graph";
 import { IndexMap, Ord } from "joshkaposh-index-map";
 import { EdgeRef, GraphBase, NodeId, NodeRef, VisitMap, VisitorSet } from './visit'
 
+export type DiGraphMap<N extends NodeTrait, E> = GraphMap<N, E, Directed>
 export function DiGraphMap<N extends NodeTrait, E>(): GraphMap<N, E, Directed> {
     return GraphMap.directed()
 }
 
+export type UnGraphMap<N extends NodeTrait, E> = GraphMap<N, E, Undirected>
 export function UnGraphMap<N extends NodeTrait, E>(): GraphMap<N, E, Undirected> {
     return GraphMap.undirected()
 }
@@ -390,7 +392,6 @@ class Neighbors<N, Ty extends EdgeType> extends Iterator<N> {
     next(): IteratorResult<N> {
         if (this.#ty.is_directed()) {
             return this.#iter
-                // @ts-expect-error
                 .filter_map(([n, dir]: [N, Direction]) => dir.value === Outgoing.value ? n : undefined)
                 .next();
         } else {
