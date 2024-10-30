@@ -90,8 +90,7 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
     }
 
     clone(): Graph<N, E, Ty, Ix> {
-        const g = new Graph<N, E, Ty, Ix>(this.#ty, this.#ix, structuredClone(this.__nodes), structuredClone(this.__edges))
-        return g;
+        return new Graph<N, E, Ty, Ix>(this.#ty, this.#ix, structuredClone(this.__nodes), structuredClone(this.__edges))
     }
 
     node_count(): number {
@@ -514,7 +513,6 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
     }
 
     node_weights(): DoubleEndedIterator<N> {
-        // @ts-expect-error
         return iter(this.__nodes).map(node => node.weight)
     }
 
@@ -535,7 +533,6 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
     }
 
     edge_weights(): DoubleEndedIterator<E> {
-        // @ts-expect-error
         return iter(this.__edges).map(edge => edge.weight)
     }
 

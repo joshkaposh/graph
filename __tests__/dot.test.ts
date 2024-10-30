@@ -35,8 +35,8 @@ test('graphmap', () => {
     }, (g, node) => '')
 
 
-    console.log('graphmap');
-    console.log(dot.render());
+    // console.log('graphmap');
+    // console.log(dot.render());
 
 })
 
@@ -44,7 +44,7 @@ test('dot', () => {
     let g = test_dot(Graph);
     let sg = test_dot(StableGraph);
 
-    console.log(g, sg);
+    // console.log(g, sg);
 
     // assert(g === sg)
 

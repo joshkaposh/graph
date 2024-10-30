@@ -1,6 +1,6 @@
 import { TODO, assert } from "joshkaposh-iterator/src/util";
 import { Directed, Direction, EdgeType, Outgoing, Undirected, GraphIx } from "./graph/shared";
-import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter } from "joshkaposh-iterator";
+import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter, range } from "joshkaposh-iterator";
 import { Option, is_some } from 'joshkaposh-option'
 import { swap_remove } from "./array-helpers";
 import { Graph } from "./graph/graph";
@@ -45,7 +45,7 @@ class Cache<N> {
     }
 }
 
-export class GraphMap<N extends NodeTrait, E, Ty extends EdgeType> implements GraphBase<N, E, N, E> {
+export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = any> implements GraphBase<N, E, N, E> {
     readonly NodeId!: N;
     readonly EdgeId!: E;
     readonly NodeWeight!: N;
@@ -114,6 +114,10 @@ export class GraphMap<N extends NodeTrait, E, Ty extends EdgeType> implements Gr
         return new_graph;
     }
 
+    clone(): GraphMap<N, E, Ty> {
+        return GraphMap.from_edges(this.#ty, this.#edges.iter().map(([[a, b], w]) => [structuredClone(a), structuredClone(b), structuredClone(w)] as [N, N, E]))
+    }
+
     // into_edge_type<NewTy extends EdgeType>(ty: NewTy): GraphMap<N, E, NewTy> {
     //     const nodes = new IndexMap();
     //     const edges = new IndexMap();
@@ -142,14 +146,22 @@ export class GraphMap<N extends NodeTrait, E, Ty extends EdgeType> implements Gr
         return key;
     }
 
-    to_edge_index(n: NodeId<this>): number {
-        return this.#nodes.get_index_of(n)!;
+    to_edge_index(a: NodeId<this>, b: NodeId<this>): number {
+        return this.#edges.get_index_of(GraphMap.edge_key(this.#cache, a, b, this.is_directed()))!;
     }
 
-    from_edge_index(ix: number): N {
-        assert(ix < this.#nodes.len(), `The requested index ${ix} is out of bounds`)
-        const [key] = this.#nodes.get_index_entry(ix)!
-        return key;
+    from_edge_index(ix: number): E {
+        assert(ix < this.#edges.len(), `The requested index ${ix} is out of bounds`)
+        const [_, w] = this.#edges.get_index_entry(ix)!
+        return w;
+    }
+
+    node_indices() {
+        return range(0, this.node_count())
+    }
+
+    edge_indices() {
+        return range(0, this.edge_count())
     }
 
     visit_map(): VisitMap<N> {
@@ -190,7 +202,7 @@ export class GraphMap<N extends NodeTrait, E, Ty extends EdgeType> implements Gr
     }
 
     node_identifiers(): DoubleEndedIterator<N> {
-        return new NodeIdentifiers(this.#nodes.iter())
+        return this.#nodes.iter().map(v => v[0])
     }
 
     edge_count(): number {
@@ -259,6 +271,11 @@ export class GraphMap<N extends NodeTrait, E, Ty extends EdgeType> implements Gr
 
             return null;
         }
+    }
+
+    update_edge(a: this['NodeId'], b: this['NodeId'], weight: this['EdgeWeight']): this['EdgeId'] {
+        this.add_edge(a, b, weight);
+        return weight
     }
 
     remove_edge(a: N, b: N): Option<E> {
@@ -451,40 +468,6 @@ class NeighborsDirected<N extends NodeTrait, Ty extends EdgeType> extends Iterat
         return this.#ty.is_directed() ?
             [0, upper] :
             [lower, upper]
-    }
-}
-
-class NodeIdentifiers<N> extends DoubleEndedIterator<N> {
-    #iter: DoubleEndedIterator<[N, [N, Direction][]]>;
-
-    constructor(it: DoubleEndedIterator<[N, [N, Direction][]]>) {
-        super()
-        this.#iter = it;
-    }
-
-    into_iter(): DoubleEndedIterator<N> {
-        this.#iter.into_iter()
-        return this
-    }
-
-    next(): IteratorResult<N, any> {
-        const n = this.#iter.next();
-        if (!n.done) {
-            const [w] = n.value;
-            return { done: false, value: w }
-        }
-
-        return done()
-    }
-
-    next_back(): IteratorResult<N, any> {
-        const n = this.#iter.next_back();
-        if (!n.done) {
-            const [w] = n.value;
-            return { done: false, value: w }
-        }
-
-        return done()
     }
 }
 

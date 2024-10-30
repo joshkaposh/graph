@@ -45,22 +45,6 @@ export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements Gra
         this.#free_edge = graph.EdgeEnd;
     }
 
-    to_node_index(n: NodeId<this>): number {
-        return n as number;
-    }
-
-    from_node_index(n: number): NodeId<this> {
-        return n as number;
-    }
-
-    to_edge_index(e: EdgeId<this>): number {
-        return e as number;
-    }
-
-    from_edge_index(e: number): EdgeId<this> {
-        return e as number;
-    }
-
     static directed<N, E, Ix = GraphIx>(size: Ix = 32 as Ix): StableGraph<N, E, Directed, Ix> {
         return new StableGraph(Directed, size)
     }
@@ -79,6 +63,26 @@ export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements Gra
         const sg: StableGraph<N, E, Ty, Ix> = new StableGraph();
         sg.#g = Graph.with_capacity(ty, ix, nodes, edges);
         return sg;
+    }
+
+    clone(): StableGraph<N, E, Ty, Ix> {
+        return new StableGraph(this.#ty, this.#ix, this.#g.clone())
+    }
+
+    to_node_index(n: NodeId<this>): number {
+        return n as number;
+    }
+
+    from_node_index(n: number): NodeId<this> {
+        return n as number;
+    }
+
+    to_edge_index(e: EdgeId<this>): number {
+        return e as number;
+    }
+
+    from_edge_index(e: number): EdgeId<this> {
+        return e as number;
     }
 
     visit_map(): VisitMap<NodeId<this>> {
@@ -358,12 +362,10 @@ export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements Gra
     }
 
     node_weights(): Iterator<N> {
-        // @ts-expect-error
         return this.#g.node_weights().filter_map(maybe => maybe)
     }
 
     edge_weights(): Iterator<E> {
-        // @ts-expect-error
         return this.#g.edge_weights().filter_map(maybe => maybe)
     }
 

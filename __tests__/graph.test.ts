@@ -1,6 +1,6 @@
 import { test, expect, assert } from 'vitest'
-import { is_none, is_some } from 'joshkaposh-option'
-import { Graph, Bfs, Dfs, Reversed, Topo, is_cyclic_undirected, astar, Outgoing, Incoming, EdgeType, dijkstra, Directed, kosaraju_scc, Undirected, TarjanScc, NodeId, tarjan_scc, GraphMap, has_path_connecting } from '../src'
+import { ErrorExt, is_none, is_some } from 'joshkaposh-option'
+import { Graph, Bfs, Dfs, Reversed, Topo, is_cyclic_undirected, astar, Outgoing, Incoming, EdgeType, dijkstra, Directed, kosaraju_scc, Undirected, TarjanScc, NodeId, tarjan_scc, GraphMap, has_path_connecting, toposort, is_cyclic_directed } from '../src'
 import { iter } from 'joshkaposh-iterator';
 
 test('undirected_dedges()', () => {
@@ -275,18 +275,114 @@ test('iter_multi_undirected_edges', () => {
     connecting_edges.delete(edge_id)
 
     edge_id = it.next()?.value?.id();
-    // assert(connecting_edges.has(edge_id))
-    // connecting_edges.delete(edge_id)
+    assert(connecting_edges.has(edge_id))
+    connecting_edges.delete(edge_id)
 
-    // edge_id = it.next().value.id();
-    // assert(connecting_edges.has(edge_id))
-    // connecting_edges.delete(edge_id)
+    edge_id = it.next().value.id();
+    assert(connecting_edges.has(edge_id))
+    connecting_edges.delete(edge_id)
 
+    assert(connecting_edges.size === 0)
+})
+
+function assert_is_topo_order<N, E>(gr: Graph<N, E, Directed>, order: Graph<N, E, Directed>['NodeId'][]) {
+    assert(gr.node_count() === order.length);
+
+    for (const edge of gr.raw_edges()) {
+        const a = edge.source()
+        const b = edge.target()
+
+        const ai = order.findIndex(x => x === a);
+        const bi = order.findIndex(x => x === b);
+
+        assert(is_some(ai) && is_some(bi))
+        assert(ai < bi)
+    }
+}
+
+test('topo', () => {
+    const gr = new Graph();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+    let c = gr.add_node("C");
+    let d = gr.add_node("D");
+    let e = gr.add_node("E");
+    let f = gr.add_node("F");
+    let g = gr.add_node("G");
+
+    gr.extend_with_edges([
+        [a, b, 7.],
+        [a, d, 5.],
+        [d, b, 9.],
+        [b, c, 8.],
+        [b, e, 7.],
+        [c, e, 5.],
+        [d, e, 15.],
+        [d, f, 6.],
+        [f, e, 8.],
+        [f, g, 11.],
+        [e, g, 9.],
+    ], () => '');
+
+    let h = gr.add_node('H')
+    let i = gr.add_node('I')
+    let j = gr.add_node('J')
+
+    gr.add_edge(h, i, 1.)
+    gr.add_edge(h, j, 3.)
+    gr.add_edge(i, j, 1.)
+
+    const order = toposort(gr);
+    assert(Array.isArray(order) && order?.length === gr.node_count())
+    assert_is_topo_order(gr as any, order);
 
 })
 
-test('topo', () => {
-    // const gr = new Graph()
+test('visit_map', () => {
+    const g = new Graph();
+    let a = g.add_node('A');
+    let b = g.add_node('B')
+    g.add_edge(a, b, 1);
+
+    const map = g.visit_map();
+
+    for (const i of g.node_identifiers()) {
+        assert(map.visit(i) === true);
+    }
+
+    for (const i of g.node_identifiers()) {
+        assert(map.is_visited(i) === true)
+        assert(map.visit(i) === false);
+    }
+})
+
+test('toposort_eq', () => {
+    const g = new Graph();
+    let a = g.add_node('A');
+    let b = g.add_node('B')
+    g.add_edge(a, b, 1);
+
+    expect(toposort(g)).toEqual([a, b])
+})
+
+test('is_cyclic_directed', () => {
+    const gr = new Graph();
+    let a = gr.add_node('a');
+    let b = gr.add_node('b');
+
+    let c = gr.add_node('c')
+    let d = gr.add_node('d')
+
+    gr.add_edge(a, b, 1);
+    gr.add_edge(b, c, 1);
+    gr.add_edge(c, d, 1);
+
+    assert(!is_cyclic_directed(gr))
+
+    gr.add_edge(d, a, 1);
+
+    console.log('cyclic', is_cyclic_directed(gr));
+
 })
 
 test('update_edge', () => {
@@ -428,8 +524,7 @@ test('astar manhattan', () => {
     expect(path).toEqual([6, [a, d, e, f]]);
 })
 
-
-test('astar grid', () => {
+test('astar_grid', () => {
     let g = new Graph<[number, number], number, EdgeType>();
 
     const cols = 5;
@@ -750,7 +845,6 @@ test('tarjan_scc_graphmap', () => {
     gr.add_node(3);
     result = []
     tarjan_scc.run(gr, scc => result.push(iter(scc).rev().collect()))
-    console.log(result);
 
     assert_sccs_eq(result, [[0], [1], [2], [3]], false)
 

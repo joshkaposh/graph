@@ -176,7 +176,7 @@ export class Bfs<N, VM extends VisitMap<N>> {
         this.stack.length = 0;
     }
 
-    next(graph: any) {
+    next(graph: Visitable<N> & IntoNeighbors<N>) {
         let node = this.stack.shift()
 
         if (is_some(node)) {
@@ -193,8 +193,8 @@ export class Bfs<N, VM extends VisitMap<N>> {
         return done()
     }
 
-    iter(graph: any) {
-        return new Walker(graph, this);
+    iter<G extends Visitable<N> & IntoNeighbors<N>>(graph: G): Walker<G, N> {
+        return new Walker(graph, this as Traversal<G, N>)
     }
 }
 
@@ -223,7 +223,7 @@ export class Topo<N, VM extends VisitMap<N>> {
         this.extend_with_initials(graph)
     }
 
-    next(g: any) {
+    next(g: Visitable<N> & IntoNeighbors<N>): IteratorResult<N> {
         let nix;
         while (is_some(nix = this.#tovisit.pop())) {
             if (this.#ordered.is_visited(nix)) {
@@ -231,7 +231,7 @@ export class Topo<N, VM extends VisitMap<N>> {
             }
             this.#ordered.visit(nix);
             for (const neigh of g.neighbors(nix)) {
-                if (new Reversed(g)
+                if (new Reversed(g as any)
                     .neighbors(neigh)
                     .all((b) => this.#ordered.is_visited(b as N))) {
                     this.#tovisit.push(neigh)
@@ -239,6 +239,10 @@ export class Topo<N, VM extends VisitMap<N>> {
             }
             return { done: false, value: nix }
         }
-        return { done: true, value: undefined }
+        return done();
+    }
+
+    iter<G extends Visitable<N> & IntoNeighbors<N>>(graph: G): Walker<G, N> {
+        return new Walker(graph, this as Traversal<G, N>)
     }
 }

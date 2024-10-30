@@ -6,6 +6,11 @@ export class VisitorSet<N> implements VisitMap<N> {
     constructor() {
         this.#set = new Set()
     }
+
+    len(): number {
+        return this.#set.size;
+    }
+
     visit(x: N): boolean {
         const has = !this.#set.has(x);
         this.#set.add(x)
@@ -25,6 +30,10 @@ export class VisitorFbs<N extends number> implements VisitMap<N> {
     #fbs: FixedBitSet;
     constructor(node_count: number) {
         this.#fbs = FixedBitSet.with_capacity(node_count)
+    }
+
+    len(): number {
+        return this.#fbs.len()
     }
 
     clear() {

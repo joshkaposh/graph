@@ -3,7 +3,7 @@ import dijkstra from "./dijkstra";
 import bellman_ford from "./bellman-ford";
 // import tarjan_scc, { TarjanScc, NodeData } from "./tarjan_scc";
 import { Dfs, DfsPostOrder, EdgeCount, EdgeRef, GraphBase, NodeIndexable, IntoEdgeReferences, IntoEdges, IntoEdgesDirected, IntoNeighbors, IntoNeighborsDirected, IntoNodeIdentifiers, IntoNodeReferences, NodeCount, Reversed, Visitable, VisitMap } from "../visit";
-import { is_none, is_some, Option } from "joshkaposh-option";
+import { ErrorExt, is_none, is_some, Option, Result } from "joshkaposh-option";
 import { assert } from "joshkaposh-iterator/src/util";
 import { iter } from "joshkaposh-iterator";
 import { u32 } from "fixed-bit-set/src/Intrinsics";
@@ -158,6 +158,51 @@ export function kosaraju_scc<G extends GraphBase<any, any> & IntoNodeReferences<
     return sccs as unknown as Array<NodeId[]>;
 }
 
+
+function topo_visit<G extends GraphBase<any, any> & IntoNeighbors>(g: G, list: any[], permanent: any, temporary: any, node: G['NodeId']): Result<G['NodeId'], ErrorExt<G['NodeId']>> {
+    if (permanent.is_visited(node)) {
+        return
+    }
+    if (temporary.is_visited(node)) {
+        return new ErrorExt(node);
+    }
+
+    temporary.visit(node);
+
+    let err
+    for (const m of g.neighbors(node)) {
+        err = topo_visit(g, list, permanent, temporary, m);
+        if (err) {
+            return err
+        }
+    }
+
+    permanent.visit(node);
+    list.push(node);
+
+    return
+}
+
+export function toposort<G extends GraphBase<any, any> & IntoNeighborsDirected & IntoNodeIdentifiers & Visitable>(g: G): Result<G['NodeId'][], ErrorExt<G['NodeId']>> {
+    const permanent = g.visit_map();
+    const temporary = g.visit_map();
+    const list: G['NodeId'] = [];
+    const node_ids = g.node_identifiers();
+
+    for (const n of node_ids) {
+        if (permanent.is_visited(n)) {
+            continue
+        }
+
+        const err = topo_visit(g, list, permanent, temporary, n);
+        if (err) {
+            return err
+        }
+    }
+
+    return list.toReversed();
+}
+
 export function is_cyclic_undirected<G extends IntoEdgeReferences & NodeCount>(graph: G) {
     const edge_sets = new UnionFind(graph.node_bound());
     for (const edge of graph.edge_references()) {
@@ -169,8 +214,8 @@ export function is_cyclic_undirected<G extends IntoEdgeReferences & NodeCount>(g
     return false
 }
 
-export function is_cyclic_directed<G>(graph: G) {
-    return graph;
+export function is_cyclic_directed<G extends GraphBase<any, any> & IntoNeighborsDirected & IntoNodeIdentifiers & Visitable>(graph: G) {
+    return !Array.isArray(toposort(graph))
 }
 
 export function has_path_connecting<G extends GraphBase<any, any> & IntoNeighbors & Visitable>(graph: G, from: G['NodeId'], to: G['NodeId']) {
@@ -213,4 +258,3 @@ export function k_shortest_path<G extends GraphBase<any, any> & IntoEdges & Visi
     }
     return scores;
 }
-

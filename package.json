@@ -1,7 +1,7 @@
 {
   "name": "joshkaposh-graph",
-  "version": "1.0.5",
-  "description": "",
+  "version": "1.0.11",
+  "description": "A collection of general purpose graph data structures and traversal algorithms",
   "main": "src/index.ts",
   "scripts": {
     "test": "vitest",

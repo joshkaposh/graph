@@ -25,7 +25,6 @@ export class Reversed<
         return this.graph.from_node_index(n);
     }
 
-
     to_edge_index(n: NodeId) {
         return this.graph.to_edge_index(n);
     }
@@ -33,7 +32,6 @@ export class Reversed<
     from_edge_index(n: NodeId) {
         return this.graph.from_edge_index(n);
     }
-
 
     is_directed(): boolean {
         return this.graph.is_directed();
@@ -93,7 +91,6 @@ export class Reversed<
         this.graph.reset_map(map);
     }
 }
-
 
 export class ReversedEdgeRef<Ed extends EdgeRef<any, any>> {
     #edge: Ed
