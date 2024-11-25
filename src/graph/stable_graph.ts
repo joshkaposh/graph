@@ -1,10 +1,10 @@
-import { is_some, Option } from "joshkaposh-option";
-import { EdgeReference, Graph, GraphIx, swap_pair } from ".";
-import { Node, Edge, createEdge, Directed, DIRECTIONS, EdgeType, index_twice, Direction, Outgoing, Incoming, Undirected } from "./shared";
+import { is_some, type Option } from "joshkaposh-option";
+import { type GraphIx, EdgeReference, Graph, swap_pair } from ".";
+import { type Node, type Edge, createEdge, Directed, DIRECTIONS, EdgeType, index_twice, Direction, Outgoing, Incoming, Undirected } from "./shared";
 import { swap } from "../array-helpers";
 import { enumerate } from "../util";
 import { done, DoubleEndedIterator, iter, Iterator } from "joshkaposh-iterator";
-import { EdgeId, EdgeRef, GraphBase, NodeId, NodeRef, VisitMap, VisitorFbs } from "../visit";
+import { type EdgeId, type NodeId, type GraphBase, VisitMap, EdgeRef, NodeRef, VisitorFbs } from "../visit";
 import { FixedBitSet } from "fixed-bit-set";
 import { assert } from "joshkaposh-iterator/src/util";
 

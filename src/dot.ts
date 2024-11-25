@@ -9,18 +9,18 @@ interface Config {
     NodeNoLabel?: true;
 }
 
-export class Dot<G extends IntoEdgeReferences & IntoNodeReferences & GraphRef> {
+export class Dot<G extends IntoEdgeReferences & IntoNodeReferences & GraphRef<any, any>> {
     #g: G
     #config: Config;
-    #get_node_attributes: (graph: G, node: NodeRef<any>) => string
-    #get_edge_attributes: (graph: G, edge: EdgeRef<any>) => string
+    #get_node_attributes: (graph: G, node: NodeRef<number, any>) => string
+    #get_edge_attributes: (graph: G, edge: EdgeRef<number, number, any>) => string
     #get_graph_attributes: (graph: G) => string
 
     constructor(
         graph: G,
         options: Config = {},
-        get_edge_attributes: (graph: G, node: EdgeRef<any>) => string = () => '',
-        get_node_attributes: (graph: G, node: NodeRef<any>) => string = () => '',
+        get_edge_attributes: (graph: G, node: EdgeRef<number, number, any>) => string = () => '',
+        get_node_attributes: (graph: G, node: NodeRef<number, any>) => string = () => '',
         get_graph_attributes: (graph: G) => string = () => ''
     ) {
         this.#g = graph;
@@ -30,11 +30,11 @@ export class Dot<G extends IntoEdgeReferences & IntoNodeReferences & GraphRef> {
         this.#get_graph_attributes = get_graph_attributes;
     }
 
-    static with_attr_getters<G extends IntoEdgeReferences & IntoNodeReferences & GraphRef>(
+    static with_attr_getters<G extends IntoEdgeReferences & IntoNodeReferences & GraphRef<any, any>>(
         graph: G,
         config: Config = {},
-        get_edge_attributes: (graph: G, edge: EdgeRef<any>) => string,
-        get_node_attributes: (graph: G, node: NodeRef<any>) => string,
+        get_edge_attributes: (graph: G, edge: EdgeRef<number, number, any>) => string,
+        get_node_attributes: (graph: G, node: NodeRef<number, any>) => string,
         get_graph_attributes: (graph: G) => string = () => ''
 
     ): Dot<G> {

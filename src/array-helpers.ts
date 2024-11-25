@@ -1,5 +1,5 @@
 import { Iterator } from "joshkaposh-iterator";
-import { Option } from "joshkaposh-option";
+import type { Option } from "joshkaposh-option";
 
 export function extend<T>(array: T[], iter: Iterator<T>) {
     iter.for_each(v => array.push(v))

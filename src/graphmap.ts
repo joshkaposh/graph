@@ -1,11 +1,11 @@
-import { TODO, assert } from "joshkaposh-iterator/src/util";
-import { Directed, Direction, EdgeType, Outgoing, Undirected, GraphIx } from "./graph/shared";
+import { assert } from "joshkaposh-iterator/src/util";
+import { type GraphIx, type EdgeType, Directed, Direction, Outgoing, Undirected } from "./graph/shared";
 import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter, range } from "joshkaposh-iterator";
-import { Option, is_some } from 'joshkaposh-option'
+import { type Option, is_some } from 'joshkaposh-option'
 import { swap_remove } from "./array-helpers";
 import { Graph } from "./graph/graph";
 import { IndexMap, Ord } from "joshkaposh-index-map";
-import { EdgeRef, GraphBase, NodeId, NodeRef, VisitMap, VisitorSet } from './visit'
+import { type VisitMap, type GraphBase, type NodeId, EdgeRef, NodeRef, VisitorSet } from './visit'
 
 export type DiGraphMap<N extends NodeTrait, E> = GraphMap<N, E, Directed>
 export function DiGraphMap<N extends NodeTrait, E>(): GraphMap<N, E, Directed> {
@@ -173,7 +173,6 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
     }
 
     capacity(): [number, number] {
-        TODO('GraphMap::capacity()');
         return [this.#nodes.len(), this.#edges.len()]
     }
 

@@ -1,10 +1,7 @@
-import { Option } from "joshkaposh-option";
+import type { Option } from "joshkaposh-option";
 
 export type GraphIx = 8 | 16 | 32;
-
-export function umax(int_size: GraphIx) {
-    return Math.pow(2, int_size) - 1
-}
+export type DefaultIx = 32;
 
 export type EdgeType = {
     is_directed(): boolean;

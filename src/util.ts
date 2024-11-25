@@ -1,5 +1,10 @@
 import { iter, Iterator } from "joshkaposh-iterator";
 import { None } from "joshkaposh-option";
+import { GraphIx } from "./graph";
+
+export function umax(int_size: GraphIx) {
+    return Math.pow(2, int_size) - 1
+}
 
 export type Some<T> = T extends None ? never : T;
 

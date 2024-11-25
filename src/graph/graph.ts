@@ -1,12 +1,13 @@
 import { DoubleEndedIterator, Iterator, done, iter, range } from 'joshkaposh-iterator';
-import { is_some, Option } from 'joshkaposh-option'
-import { DIRECTIONS, Direction, Incoming, Outgoing, Directed, Undirected, umax, EdgeType, Node, Edge, createNode, createEdge, index_twice, GraphIx } from './shared';
-import { assert_some, TODO } from 'joshkaposh-iterator/src/util';
+import { is_some, type Option } from 'joshkaposh-option'
+import { type EdgeType, type Node, type Edge, type GraphIx, DIRECTIONS, Direction, Incoming, Outgoing, Directed, Undirected, createNode, createEdge, index_twice } from './shared';
+import { assert_some } from 'joshkaposh-iterator/src/util';
 import { capacity, extend, reserve, swap, swap_remove } from '../array-helpers';
 import { enumerate } from '../util';
-import { EdgeId, EdgeRef, EdgeWeight, GraphBase, NodeId, NodeRef, VisitMap } from '../visit';
+import { type EdgeId, type EdgeWeight, type GraphBase, type NodeId, EdgeRef, NodeRef, VisitMap } from '../visit';
 import { FixedBitSet } from 'fixed-bit-set';
 import { VisitorFbs } from '../visit/visitor';
+import { umax } from '../util'
 
 
 export function DiGraph<N, E>() {
@@ -74,10 +75,6 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
 
     ty(): Ty {
         return this.#ty;
-    }
-
-    from_edges<N, E, Ty extends EdgeType>(ty: Ty, edges: [N, N, E][]) {
-        TODO('Graph::from_edges()', ty, edges)
     }
 
     visit_map(): VisitMap<number> {
