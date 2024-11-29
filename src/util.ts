@@ -1,9 +1,23 @@
 import { iter, Iterator } from "joshkaposh-iterator";
-import { None } from "joshkaposh-option";
-import { GraphIx } from "./graph";
+import type { None, Option } from "joshkaposh-option";
+import type { GraphIx } from "./graph";
+
+export type Orderable<T> = T extends Ord ? T : never
+
+export type Ord = Option<(string) & string | (boolean) & boolean | (number) & number | {
+    [Symbol.toPrimitive](): string;
+}> & {}
 
 export function umax(int_size: GraphIx) {
     return Math.pow(2, int_size) - 1
+}
+
+export function next_power_of_2(n: number) {
+    if (n <= 1) {
+        return 1
+    }
+
+    return Math.abs(Math.clz32(n - 1) - 32)
 }
 
 export type Some<T> = T extends None ? never : T;
@@ -15,17 +29,3 @@ export function enumerate<T>(iterable: Iterable<T>): Iterator<[number, T]> {
 export function zip<K, V>(i: Iterable<K>, j: Iterable<V>): Iterator<[K, V]> {
     return iter(i).zip(j);
 }
-
-// export function ord<T, R>(lhs: T, rhs: T, cases: {
-//     eq?: () => R;
-//     lt?: () => R;
-//     gt?: () => R;
-// }) {
-//     if (lhs === rhs) {
-//         cases.eq?.call(null)
-//     } else if (lhs < rhs) {
-//         cases.lt?.call(null)
-//     } else {
-//         cases.gt?.call(null)
-//     }
-// }

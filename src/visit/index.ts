@@ -1,6 +1,7 @@
 import { Iterator } from 'joshkaposh-iterator';
 import { Direction, EdgeType } from '../graph';
 import { Visitable } from './traversal';
+import { Prettify } from 'joshkaposh-iterator/src/util';
 
 export * from './traversal';
 export * from './reversed';
@@ -24,13 +25,13 @@ export interface NodeIndexable<Id = any> {
     from_node_index(ix: number): Id
 }
 
-export interface EdgeIndexable<Id = any> {
+export interface EdgeIndexable<Id extends any = number> {
     to_edge_index(id: Id): number;
     from_edge_index(ix: number): Id;
 
 }
 
-export interface NodeCount<NodeId = any> extends NodeIndexable<NodeId> {
+export interface NodeCount<NodeId extends any = number> extends NodeIndexable<NodeId> {
     node_count(): number;
     node_bound(): number;
 }
@@ -114,3 +115,10 @@ export interface IntoNeighbors<NodeId = any, EdgeId = any, NodeWeight = any, Edg
 export interface IntoNeighborsDirected<NodeId = any, EdgeId = any, NodeWeight = any, EdgeWeight = any> extends IntoNeighbors<NodeId, EdgeId, NodeWeight, EdgeWeight> {
     neighbors_directed(vertex: NodeId, dir: Direction): Iterator<NodeId>
 }
+
+export type GraphImpl<NodeId, EdgeId, NodeWeight, EdgeWeight> = Prettify<GraphBase<NodeId, EdgeId, NodeWeight, EdgeWeight> &
+    IntoNeighborsDirected<NodeId, EdgeId, NodeWeight, EdgeWeight> &
+    IntoEdgesDirected<NodeId, EdgeId, NodeWeight, EdgeWeight> &
+    IntoNodeReferences<NodeId, EdgeId, NodeWeight, EdgeWeight> &
+    IntoEdgeReferences<NodeId, EdgeId, NodeWeight, EdgeWeight>
+>

@@ -29,6 +29,12 @@ export function swap<T>(array: T[], from_index: number, to_index: number): T[] {
     return array
 }
 
+export function replace<T>(array: T[], index: number, element: T) {
+    const old = array[index];
+    array[index] = element;
+    return old;
+}
+
 export function swap_remove<T>(array: T[], i: number): Option<T> {
     if (i < array.length - 1) {
         swap(array, i, array.length - 1)

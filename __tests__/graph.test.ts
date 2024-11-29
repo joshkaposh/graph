@@ -380,9 +380,6 @@ test('is_cyclic_directed', () => {
     assert(!is_cyclic_directed(gr))
 
     gr.add_edge(d, a, 1);
-
-    console.log('cyclic', is_cyclic_directed(gr));
-
 })
 
 test('update_edge', () => {

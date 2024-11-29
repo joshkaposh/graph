@@ -1,6 +1,6 @@
 import { is_some, Option } from "joshkaposh-option";
 import { GraphBase, IntoNeighborsDirected, NodeCount } from "../visit";
-import { done, from_fn, iter, Iterator, once } from "joshkaposh-iterator";
+import { done, from_fn, item, iter, Iterator, once } from "joshkaposh-iterator";
 import { IndexSet } from "joshkaposh-index-map";
 import { Outgoing } from "../graph";
 
@@ -22,6 +22,7 @@ export function all_simple_paths<
 
     const stack = [graph.neighbors_directed(from, Outgoing)];
 
+    // @ts-expect-error
     return from_fn(() => {
         let children: Iterator<any>;
         while (is_some(stack[stack.length - 1])) {
@@ -36,8 +37,9 @@ export function all_simple_paths<
                             const path = visited
                                 .iter()
                                 .chain(once(to))
-                                .collect(target_coll!)
-                            return { done: false, value: path }
+                                // @ts-expect-error
+                                .collect(target_coll)
+                            return item(path)
                         }
                     } else if (!visited.contains(child.value)) {
                         visited.insert(child.value);
@@ -45,8 +47,9 @@ export function all_simple_paths<
                     }
                 } else {
                     if ((child === to || children.any(v => v === to)) && visited.len() >= min_length) {
-                        const path = visited.iter().chain(once(to)).collect(target_coll!);
-                        return { done: false, value: path };
+                        // @ts-expect-error
+                        const path = visited.iter().chain(once(to)).collect(target_coll);
+                        return item(path);
                     }
                     stack.pop();
                     visited.pop();

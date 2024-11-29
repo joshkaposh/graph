@@ -4,11 +4,11 @@ import { type Node, type Edge, createEdge, Directed, DIRECTIONS, EdgeType, index
 import { swap } from "../array-helpers";
 import { enumerate } from "../util";
 import { done, DoubleEndedIterator, iter, Iterator } from "joshkaposh-iterator";
-import { type EdgeId, type NodeId, type GraphBase, VisitMap, EdgeRef, NodeRef, VisitorFbs } from "../visit";
+import { type EdgeId, type NodeId, VisitMap, EdgeRef, NodeRef, VisitorFbs, type GraphImpl, Visitable } from "../visit";
 import { FixedBitSet } from "fixed-bit-set";
 import { assert } from "joshkaposh-iterator/src/util";
 
-export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase<number, number, N, E> {
+export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl<number, number, N, E>, Visitable<number> {
 
     readonly NodeEnd: number;
     readonly EdgeEnd: number;

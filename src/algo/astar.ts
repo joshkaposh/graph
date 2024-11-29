@@ -1,11 +1,8 @@
 import { is_some, Option } from "joshkaposh-option";
-// import { EdgeReference } from "../graph";
 import { Heap } from "joshkaposh-heap";
 import { MinScored } from "../scored";
-// import { EdgeType } from "../graph/shared";
 import { Visitable, IntoEdges, EdgeRef } from "../visit";
 
-// graph: IntoEdges & Visitable
 export function astar<N, E, K extends number>(
     graph: IntoEdges<E> & Visitable<N>,
     start: number,
@@ -68,7 +65,6 @@ export function astar<N, E, K extends number>(
 }
 
 class PathTracker {
-    // came_from: Map<NodeIndex, NodeIndex>
     #came_from: Map<number, number>
     constructor() {
         this.#came_from = new Map();

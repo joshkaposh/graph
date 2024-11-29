@@ -2,10 +2,11 @@ import { assert } from "joshkaposh-iterator/src/util";
 import { type GraphIx, type EdgeType, Directed, Direction, Outgoing, Undirected } from "./graph/shared";
 import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter, range } from "joshkaposh-iterator";
 import { type Option, is_some } from 'joshkaposh-option'
-import { swap_remove } from "./array-helpers";
 import { Graph } from "./graph/graph";
-import { IndexMap, Ord } from "joshkaposh-index-map";
+import { IndexMap } from "joshkaposh-index-map";
 import { type VisitMap, type GraphBase, type NodeId, EdgeRef, NodeRef, VisitorSet } from './visit'
+import type { Ord } from "./util";
+import { swap_remove } from "./array-helpers";
 
 export type DiGraphMap<N extends NodeTrait, E> = GraphMap<N, E, Directed>
 export function DiGraphMap<N extends NodeTrait, E>(): GraphMap<N, E, Directed> {
@@ -45,6 +46,12 @@ class Cache<N> {
     }
 }
 
+function edge_key<N extends NodeTrait>(cache: Cache<N>, a: N, b: N, directed: boolean): [N, N] & Ord {
+    // cache this so lookups will be deterministic
+    return directed || a <= b ?
+        cache.get(a, b) : cache.get(b, a);
+}
+
 export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = any> implements GraphBase<N, E, N, E> {
     readonly NodeId!: N;
     readonly EdgeId!: E;
@@ -61,12 +68,6 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
         this.#edges = edges;
         this.#ty = ty;
         this.#cache = new Cache();
-    }
-
-    static edge_key<N extends NodeTrait>(cache: Cache<N>, a: N, b: N, directed: boolean): [N, N] & Ord {
-        // cache this so lookups will be deterministic
-        return directed || a <= b ?
-            cache.get(a, b) : cache.get(b, a);
     }
 
     static directed<N extends NodeTrait, E>(): GraphMap<N, E, Directed> {
@@ -118,24 +119,6 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
         return GraphMap.from_edges(this.#ty, this.#edges.iter().map(([[a, b], w]) => [structuredClone(a), structuredClone(b), structuredClone(w)] as [N, N, E]))
     }
 
-    // into_edge_type<NewTy extends EdgeType>(ty: NewTy): GraphMap<N, E, NewTy> {
-    //     const nodes = new IndexMap();
-    //     const edges = new IndexMap();
-    //     const cache = new Cache();
-
-    //     for (const [k, v] of this.#nodes) {
-    //         nodes.insert_full(k, v);
-    //     }
-
-    //     for (const el of this.#edges) {
-    //         const key = GraphMap.edge_key()
-    //     }
-
-    //     const gr = ty.is_directed() ? GraphMap.directed() : GraphMap.undirected();
-
-    //     // return new GraphMap(this.#nodes, this.#edges, ty)
-    // }
-
     to_node_index(n: NodeId<this>): number {
         return this.#nodes.get_index_of(n)!;
     }
@@ -147,7 +130,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
     }
 
     to_edge_index(a: NodeId<this>, b: NodeId<this>): number {
-        return this.#edges.get_index_of(GraphMap.edge_key(this.#cache, a, b, this.is_directed()))!;
+        return this.#edges.get_index_of(edge_key(this.#cache, a, b, this.is_directed()))!;
     }
 
     from_edge_index(ix: number): E {
@@ -181,7 +164,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
     }
 
     contains_edge(a: N, b: N): boolean {
-        return this.#edges.contains_key(GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed()))
+        return this.#edges.contains_key(edge_key(this.#cache, a, b, this.#ty.is_directed()))
     }
 
     is_directed(): boolean {
@@ -196,12 +179,16 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
         return this.node_count()
     }
 
+    node_identifiers(): DoubleEndedIterator<N> {
+        return this.#nodes.iter().map(v => v[0])
+    }
+
     node_references(): DoubleEndedIterator<NodeRef<N, N>> {
         return new NodeReferences(this.#nodes.iter())
     }
 
-    node_identifiers(): DoubleEndedIterator<N> {
-        return this.#nodes.iter().map(v => v[0])
+    edge_references(): DoubleEndedIterator<EdgeRef<N, E, E>> {
+        return new EdgeReferences(this.#edges.iter())
     }
 
     edge_count(): number {
@@ -210,10 +197,6 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
 
     edge_bound(): number {
         return this.edge_count()
-    }
-
-    edge_references() {
-        return new EdgeReferences(this.#edges.iter())
     }
 
     clear(): void {
@@ -235,8 +218,8 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
 
         for (const [succ, dir] of links) {
             const edge = dir.value === Direction.Outgoing().value ?
-                GraphMap.edge_key(this.#cache, n, succ, this.#ty.is_directed()) :
-                GraphMap.edge_key(this.#cache, succ, n, this.#ty.is_directed())
+                edge_key(this.#cache, n, succ, this.#ty.is_directed()) :
+                edge_key(this.#cache, succ, n, this.#ty.is_directed())
 
             this.#remove_single_edge(succ, n, dir.opposite());
             this.#edges.swap_remove(edge);
@@ -245,7 +228,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
     }
 
     add_edge(a: N, b: N, weight: E): Option<E> {
-        const old = this.#edges.insert(GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed()), weight);
+        const old = this.#edges.insert(edge_key(this.#cache, a, b, this.#ty.is_directed()), weight);
 
         if (is_some(old)) {
             return old;
@@ -285,22 +268,22 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
             exist1;
 
 
-        const edkey = GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed());
+        const edkey = edge_key(this.#cache, a, b, this.#ty.is_directed());
 
         const weight = this.#edges.shift_remove(edkey);
         return weight;
     }
 
-    nodes(): Nodes<N> {
-        return new Nodes(this.#nodes.keys() as any);
+    nodes(): ExactSizeDoubleEndedIterator<N> {
+        return new Nodes(this.#nodes.keys());
     }
 
-    neighbors(a: N): Neighbors<N, Ty> {
+    neighbors(a: N): Iterator<N> {
         const iterable = this.#nodes.get(a) ?? [];
         return new Neighbors(iter(iterable), this.#ty)
     }
 
-    neighbors_directed(a: N, dir: Direction): NeighborsDirected<N, Ty> {
+    neighbors_directed(a: N, dir: Direction): Iterator<N> {
         const iterable = this.#nodes.get(a) ?? [];
         return new NeighborsDirected(
             iter(iterable),
@@ -310,7 +293,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
         )
     }
 
-    edges(a: N): Edges<N, E, Ty> {
+    edges(a: N): Iterator<[N, N, E]> {
         return new Edges(
             this.#cache,
             a,
@@ -320,7 +303,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
         )
     }
 
-    edges_directed(a: N, dir: Direction): EdgesDirected<N, E, Ty> {
+    edges_directed(a: N, dir: Direction): Iterator<[N, N, E]> {
         return new EdgesDirected(
             this.#cache,
             a,
@@ -332,14 +315,23 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
     }
 
     edge_weight(a: N, b: N): Option<E> {
-        return this.#edges.get(GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed()))
+        return this.#edges.get(edge_key(this.#cache, a, b, this.#ty.is_directed()))
     }
 
-    // Return an iterator over all edges of the graph with their weight in arbitrary order.
-    all_edges(): AllEdges<N, E> {
+    set_edge_weight(a: N, b: N, w: E) {
+        this.#edges.insert(edge_key(this.#cache, a, b, this.#ty.is_directed()), w)
+    }
+
+    /**
+     * Return an iterator over all edges of the graph with their weight in arbitrary order.
+     */
+    all_edges(): DoubleEndedIterator<[N, N, E]> {
         return new AllEdges(iter(this.#edges as any) as any)
     }
 
+    /**
+     * Turns a `GraphMap<N, N, E>` into its equivalent Graph 
+     */
     into_graph(): Graph<N, E, Ty> {
         // TODO: add ix to graphmap to pass here instead of hardcoded
         const gr = Graph.with_capacity<N, E, Ty, GraphIx>(this.#ty, 32, this.node_count(), this.edge_count());
@@ -557,10 +549,10 @@ class Nodes<N> extends ExactSizeDoubleEndedIterator<N> {
 class Edges<N extends NodeTrait, E, Ty extends EdgeType> extends Iterator<[N, N, E]> {
     #from: N;
     #edges: IndexMap<([N, N]) & Ord, E>;
-    #iter: Neighbors<N, Ty>;
+    #iter: Iterator<N>;
     #ty: Ty;
     #cache: Cache<N>;
-    constructor(cache: Cache<N>, from: N, edges: IndexMap<([N, N]) & Ord, E>, iter: Neighbors<N, Ty>, ty: Ty) {
+    constructor(cache: Cache<N>, from: N, edges: IndexMap<([N, N]) & Ord, E>, iter: Iterator<N>, ty: Ty) {
         super()
         this.#from = from;
         this.#edges = edges;
@@ -579,7 +571,7 @@ class Edges<N extends NodeTrait, E, Ty extends EdgeType> extends Iterator<[N, N,
         if (!n.done) {
             const a = this.#from;
             const b = n.value
-            const edge = this.#edges.get(GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed()));
+            const edge = this.#edges.get(edge_key(this.#cache, a, b, this.#ty.is_directed()));
             assert(is_some(edge));
             return { done: false, value: [a, b, edge!] }
         }
@@ -596,10 +588,10 @@ class EdgesDirected<N extends NodeTrait, E, Ty extends EdgeType> extends Iterato
     #from: N;
     #dir: Direction;
     #edges: IndexMap<([N, N]) & Ord, E>;
-    #iter: NeighborsDirected<N, Ty>
+    #iter: Iterator<N>
     #ty: Ty;
     #cache: Cache<N>
-    constructor(cache: Cache<N>, from: N, dir: Direction, edges: IndexMap<([N, N]) & Ord, E>, iter: NeighborsDirected<N, Ty>, ty: Ty) {
+    constructor(cache: Cache<N>, from: N, dir: Direction, edges: IndexMap<([N, N]) & Ord, E>, iter: Iterator<N>, ty: Ty) {
         super()
         this.#cache = cache
         this.#from = from;
@@ -625,7 +617,7 @@ class EdgesDirected<N extends NodeTrait, E, Ty extends EdgeType> extends Iterato
                 b = temp;
             }
 
-            const edge = this.#edges.get(GraphMap.edge_key(this.#cache, a, b, this.#ty.is_directed()))!
+            const edge = this.#edges.get(edge_key(this.#cache, a, b, this.#ty.is_directed()))!
             assert(is_some(edge));
             return { done: false, value: [a, b, edge] }
         }

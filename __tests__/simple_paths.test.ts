@@ -30,7 +30,6 @@ test('all_simple_paths', () => {
     ];
 
     let actual_simple_path_0_to_5 = all_simple_paths(graph, 0, 5, 0, null, Set).collect(Set);
-    console.log(actual_simple_path_0_to_5);
 })
 
 test('one_simple_path', () => {
@@ -42,9 +41,5 @@ test('one_simple_path', () => {
     const expected_0_to_1 = [[0, 1]];
 
     const actual_0_to_1 = all_simple_paths(graph, 0, 1, 0, undefined).collect();
-
-    console.log(actual_0_to_1);
-
-
 
 })

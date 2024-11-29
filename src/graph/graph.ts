@@ -4,11 +4,10 @@ import { type EdgeType, type Node, type Edge, type GraphIx, DIRECTIONS, Directio
 import { assert_some } from 'joshkaposh-iterator/src/util';
 import { capacity, extend, reserve, swap, swap_remove } from '../array-helpers';
 import { enumerate } from '../util';
-import { type EdgeId, type EdgeWeight, type GraphBase, type NodeId, EdgeRef, NodeRef, VisitMap } from '../visit';
-import { FixedBitSet } from 'fixed-bit-set';
+import { type EdgeId, type EdgeWeight, type GraphBase, type NodeId, type GraphImpl, type Visitable, type VisitMap, EdgeRef, NodeRef } from '../visit';
+import type { FixedBitSet } from 'fixed-bit-set';
 import { VisitorFbs } from '../visit/visitor';
 import { umax } from '../util'
-
 
 export function DiGraph<N, E>() {
     return Graph.directed<N, E>()
@@ -18,7 +17,7 @@ export function UnGraph<N, E>() {
     return Graph.undirected<N, E>()
 }
 
-export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase<number, number, N, E> {
+export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl<number, number, N, E>, Visitable<number> {
     //! typescript types, never added to graph
     readonly NodeId!: number;
     readonly EdgeId!: number;
@@ -49,10 +48,6 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
         return new Graph(Directed, size, [], [])
     }
 
-    static default<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty = Directed as Ty, ix: Ix = 32 as Ix): Graph<N, E, Ty, Ix> {
-        return Graph.with_capacity(ty, ix, 0, 0) as Graph<N, E, Ty, Ix>
-    }
-
     static with_capacity<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty = Directed as Ty, ix: Ix = 32 as Ix, _nodes: number, _edges: number): Graph<N, E, Ty, Ix> {
         return new Graph(ty, ix, [], [])
     }
@@ -65,12 +60,12 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphBase
         return n as number;
     }
 
-    to_edge_index(n: E): number {
-        return n as number;
+    to_edge_index(id: number): number {
+        return id
     }
 
-    from_edge_index(n: E): number {
-        return n as number;
+    from_edge_index(ix: number): number {
+        return ix;
     }
 
     ty(): Ty {

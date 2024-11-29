@@ -27,7 +27,6 @@ export class UnionFind {
     find(x: number): number {
         while (true) {
             let xparent = this.#parent[x];
-            console.log('find: parent: ', xparent, x);
 
             if (xparent === x) {
                 break

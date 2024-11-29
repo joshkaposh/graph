@@ -1,7 +1,7 @@
 import { assert, expect, test } from 'vitest'
 import { GraphMap, NodeTrait, } from '../src/graphmap';
 import { Directed, Direction, Graph, Incoming, Outgoing, Undirected } from '../src/graph';
-import { is_some } from 'joshkaposh-option';
+import { is_none, is_some } from 'joshkaposh-option';
 import { Dfs, VisitorSet } from '../src';
 
 test('simple', () => {
@@ -57,24 +57,25 @@ test('edges_directed', () => {
 })
 
 test('remove', () => {
-    const g = GraphMap.undirected<number, number>();
-    g.add_node(1)
-    g.add_node(2)
-    g.add_edge(1, 2, - 1);
+    const g = GraphMap.undirected<string, number>();
+    g.add_node('A')
+    g.add_node('B')
+    g.add_edge('A', 'B', -1);
 
-    assert(g.edge_weight(1, 2) === -1);
-    assert(g.edge_weight(2, 1) === -1);
-    assert(g.neighbors(1).count() === 1);
+    assert(g.edge_weight('A', 'B') === -1);
+    assert(g.edge_weight('B', 'A') === -1);
+    assert(g.neighbors('A').count() === 1);
 
-    let noexist = g.remove_edge(2, 3);
-    assert(!is_some(noexist));
+    let noexist = g.remove_edge('A', 'C');
+    assert(is_none(noexist))
 
-    let exist = g.remove_edge(2, 1);
+    let exist = g.remove_edge('B', 'A')
     assert(exist === -1);
     assert(g.edge_count() === 0);
-    assert(g.edge_weight(1, 2) === null);
-    assert(g.edge_weight(2, 1) === null);
-    assert(g.neighbors(1).count() === 0);
+    assert(is_none(g.edge_weight('A', 'B')))
+    assert(is_none(g.edge_weight('B', 'A')))
+    assert(g.neighbors('A').count() === 0);
+
 })
 
 test('remove_node', () => {
@@ -96,20 +97,20 @@ test('remove_directed', () => {
 
 
     assert(g.edge_weight(1, 2) === -1);
-    assert(g.edge_weight(2, 1) === null);
+    assert(is_none(g.edge_weight(2, 1)));
     assert(g.neighbors(1).count() === 1);
 
 
     let noexist = g.remove_edge(2, 3);
-    assert(!is_some(noexist));
+    assert(is_none(noexist));
 
     let exist = g.remove_edge(2, 1);
-    assert(!is_some(exist));
+    assert(is_none(exist));
     exist = g.remove_edge(1, 2);
     assert(exist === -1);
     assert(g.edge_count() === 0);
-    assert(g.edge_weight(1, 2) === null);
-    assert(g.edge_weight(2, 1) === null);
+    assert(is_none(g.edge_weight(1, 2)));
+    assert(is_none(g.edge_weight(2, 1)));
     assert(g.neighbors(1).count() === 0);
 })
 

@@ -7,7 +7,7 @@ export default function dijkstra<NodeId, K, G extends IntoEdges & Visitable<Node
     graph: G,
     start: NodeId,
     goal: Option<NodeId>,
-    edge_cost: (ref: EdgeRef<any>) => K,
+    edge_cost: (ref: EdgeRef<any, any>) => K,
     default_weight: K,
 ): Map<NodeId, K> {
     const visited = graph.visit_map();
