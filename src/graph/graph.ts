@@ -9,23 +9,25 @@ import type { FixedBitSet } from 'fixed-bit-set';
 import { VisitorFbs } from '../visit/visitor';
 import { umax } from '../util'
 
+export type DiGraph<N, E, Ix extends GraphIx = 32> = Graph<N, E, Directed, Ix>;
 export function DiGraph<N, E>() {
     return Graph.directed<N, E>()
 }
 
+export type UnGraph<N, E, Ix extends GraphIx = 32> = Graph<N, E, Undirected, Ix>;
 export function UnGraph<N, E>() {
     return Graph.undirected<N, E>()
 }
 
-export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl<number, number, N, E>, Visitable<number> {
+export class Graph<N, E, Ty extends EdgeType, Ix extends GraphIx = 32> implements GraphImpl<number, number, N, E>, Visitable<number> {
     //! typescript types, never added to graph
     readonly NodeId!: number;
     readonly EdgeId!: number;
     readonly NodeWeight!: N;
     readonly EdgeWeight!: E;
 
-    readonly NodeEnd = umax(32)
-    readonly EdgeEnd = umax(32)
+    readonly NodeEnd: number;
+    readonly EdgeEnd: number;
 
     //internal data
     #ty: Ty;
@@ -38,17 +40,20 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl
         this.__edges = edges;
         this.#ty = ty;
         this.#ix = ix;
+        const max = umax(ix)
+        this.NodeEnd = max;
+        this.EdgeEnd = max;
     }
 
-    static undirected<N, E, Ix = GraphIx>(size: Ix = 32 as Ix): Graph<N, E, Undirected, Ix> {
+    static undirected<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): Graph<N, E, Undirected, Ix> {
         return new Graph(Undirected, size, [], [])
     }
 
-    static directed<N, E, Ix = GraphIx>(size: Ix = 32 as Ix): Graph<N, E, Directed, Ix> {
+    static directed<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): Graph<N, E, Directed, Ix> {
         return new Graph(Directed, size, [], [])
     }
 
-    static with_capacity<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty = Directed as Ty, ix: Ix = 32 as Ix, _nodes: number, _edges: number): Graph<N, E, Ty, Ix> {
+    static with_capacity<N, E, Ty extends EdgeType, Ix extends GraphIx = 32>(ty: Ty = Directed as Ty, ix: Ix = 32 as Ix, _nodes: number, _edges: number): Graph<N, E, Ty, Ix> {
         return new Graph(ty, ix, [], [])
     }
 
@@ -641,7 +646,7 @@ export class Graph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl
             }
         }
     }
-    static from_edges<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty, ix: Ix, default_node_weight: () => N, iterable: Iterable<[N, N, E]>): Graph<N, E, Ty, Ix> {
+    static from_edges<N, E, Ty extends EdgeType, Ix extends GraphIx = 32>(ty: Ty, ix: Ix, default_node_weight: () => N, iterable: Iterable<[N, N, E]>): Graph<N, E, Ty, Ix> {
         const g = Graph.with_capacity(ty, ix, 0, 0) as Graph<N, E, Ty, Ix>;
         g.extend_with_edges(iterable, default_node_weight);
         return g;

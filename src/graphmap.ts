@@ -1,5 +1,5 @@
 import { assert } from "joshkaposh-iterator/src/util";
-import { type GraphIx, type EdgeType, Directed, Direction, Outgoing, Undirected } from "./graph/shared";
+import { type EdgeType, Directed, Direction, Outgoing, Undirected } from "./graph/shared";
 import { DoubleEndedIterator, ExactSizeDoubleEndedIterator, Iterator, done, iter, range } from "joshkaposh-iterator";
 import { type Option, is_some } from 'joshkaposh-option'
 import { Graph } from "./graph/graph";
@@ -334,7 +334,7 @@ export class GraphMap<N extends NodeTrait = any, E = any, Ty extends EdgeType = 
      */
     into_graph(): Graph<N, E, Ty> {
         // TODO: add ix to graphmap to pass here instead of hardcoded
-        const gr = Graph.with_capacity<N, E, Ty, GraphIx>(this.#ty, 32, this.node_count(), this.edge_count());
+        const gr = Graph.with_capacity<N, E, Ty, 32>(this.#ty, 32, this.node_count(), this.edge_count());
         for (const [node] of this.#nodes) {
             gr.add_node(node)
         }

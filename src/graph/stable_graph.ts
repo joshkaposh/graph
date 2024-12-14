@@ -1,18 +1,23 @@
+import { done, DoubleEndedIterator, iter, Iterator } from "joshkaposh-iterator";
 import { is_some, type Option } from "joshkaposh-option";
+import { FixedBitSet } from "fixed-bit-set";
+import { assert } from "joshkaposh-iterator/src/util";
 import { type GraphIx, EdgeReference, Graph, swap_pair } from ".";
 import { type Node, type Edge, createEdge, Directed, DIRECTIONS, EdgeType, index_twice, Direction, Outgoing, Incoming, Undirected } from "./shared";
 import { swap } from "../array-helpers";
 import { enumerate } from "../util";
-import { done, DoubleEndedIterator, iter, Iterator } from "joshkaposh-iterator";
 import { type EdgeId, type NodeId, VisitMap, EdgeRef, NodeRef, VisitorFbs, type GraphImpl, Visitable } from "../visit";
-import { FixedBitSet } from "fixed-bit-set";
-import { assert } from "joshkaposh-iterator/src/util";
 
-export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements GraphImpl<number, number, N, E>, Visitable<number> {
+export function DiStableGraph<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): StableGraph<N, E, Directed, Ix> {
+    return StableGraph.directed(size)
+}
+export function UnStableGraph<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): StableGraph<N, E, Undirected, Ix> {
+    return StableGraph.undirected(size)
+}
 
+export class StableGraph<N, E, Ty extends EdgeType, Ix extends GraphIx = 32> implements GraphImpl<number, number, N, E>, Visitable<number> {
     readonly NodeEnd: number;
     readonly EdgeEnd: number;
-
     NodeId!: number;
     EdgeId!: number;
     NodeWeight!: N;
@@ -45,21 +50,21 @@ export class StableGraph<N, E, Ty extends EdgeType, Ix = GraphIx> implements Gra
         this.#free_edge = graph.EdgeEnd;
     }
 
-    static directed<N, E, Ix = GraphIx>(size: Ix = 32 as Ix): StableGraph<N, E, Directed, Ix> {
+    static directed<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): StableGraph<N, E, Directed, Ix> {
         return new StableGraph(Directed, size)
     }
 
-    static undirected<N, E, Ix = GraphIx>(size: Ix = 32 as Ix): StableGraph<N, E, Undirected, Ix> {
+    static undirected<N, E, Ix extends GraphIx = 32>(size: Ix = 32 as Ix): StableGraph<N, E, Undirected, Ix> {
         return new StableGraph(Undirected, size)
     }
 
-    static from_edges<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty, ix: Ix, iterable: Iterable<[number, number, E]>): StableGraph<N, E, Ty, Ix> {
+    static from_edges<N, E, Ty extends EdgeType, Ix extends GraphIx = 32>(ty: Ty, ix: Ix, iterable: Iterable<[number, number, E]>): StableGraph<N, E, Ty, Ix> {
         const g: StableGraph<N, E, Ty, Ix> = StableGraph.with_capacity(ty, ix, 0, 0);
         g.extend_with_edges(iterable);
         return g;
     }
 
-    static with_capacity<N, E, Ty extends EdgeType, Ix = GraphIx>(ty: Ty, ix: Ix, nodes: number, edges: number): StableGraph<N, E, Ty, Ix> {
+    static with_capacity<N, E, Ty extends EdgeType, Ix extends GraphIx = 32>(ty: Ty, ix: Ix, nodes: number, edges: number): StableGraph<N, E, Ty, Ix> {
         const sg: StableGraph<N, E, Ty, Ix> = new StableGraph();
         sg.#g = Graph.with_capacity(ty, ix, nodes, edges);
         return sg;
