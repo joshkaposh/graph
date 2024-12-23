@@ -5,11 +5,15 @@ import { Reversed } from "./reversed";
 import { IntoNeighbors } from ".";
 
 export interface VisitMap<N = any> {
-    // Mark `a` as visited.
-    // Return **true** if this is the first visit, false otherwise.
+    /**
+     * Mark `a` as visited.
+     * Return **true** if this is the first visit, false otherwise. 
+     */
     visit(a: N): boolean;
 
-    // Return whether `a` has been visited before.
+    /**
+     * Return whether `a` has been visited before.
+     */
     is_visited(a: N): boolean;
 }
 
@@ -18,7 +22,7 @@ export interface Visitable<N = any> {
     reset_map(map: VisitMap<N>): void;
 }
 
-interface Traversal<G, N> {
+export interface Traversal<G, N> {
     next(graph: G): IteratorResult<N>
 }
 

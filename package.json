@@ -1,6 +1,6 @@
 {
   "name": "joshkaposh-graph",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "A collection of general purpose graph data structures and traversal algorithms",
   "main": "src/index.ts",
   "scripts": {
@@ -20,10 +20,10 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "fixed-bit-set": "^1.0.0",
-    "joshkaposh-heap": "^1.0.0",
-    "joshkaposh-index-map": "^1.0.7",
-    "joshkaposh-iterator": "^1.1.8",
+    "fixed-bit-set": "^1.1.0",
+    "joshkaposh-heap": "^1.2.0",
+    "joshkaposh-index-map": "^1.0.8",
+    "joshkaposh-iterator": "^1.1.10",
     "joshkaposh-option": "^1.0.2"
   }
 }

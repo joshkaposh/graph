@@ -12,9 +12,9 @@ export class VisitorSet<N> implements VisitMap<N> {
     }
 
     visit(x: N): boolean {
-        const has = !this.#set.has(x);
+        const is_first_visit = !this.#set.has(x);
         this.#set.add(x)
-        return has;
+        return is_first_visit;
     }
 
     is_visited(x: N): boolean {
